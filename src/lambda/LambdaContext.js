@@ -36,7 +36,6 @@ export default class LambdaContext {
   }
 
   create() {
-    console.log(`Context is ${JSON.stringify(this.#context)}`)
     return this.#context
   }
 }
