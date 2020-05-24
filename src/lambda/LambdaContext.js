@@ -29,7 +29,7 @@ export default class LambdaContext {
 
   setCustomContext(context) {
     console.log(`Adding context ${JSON.stringify(context)}`)
-    this.#context = { ...context, ...this.#context }
+    this.#context.identity = context.identity
   }
 
   create() {
