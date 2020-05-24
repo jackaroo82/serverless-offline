@@ -117,6 +117,9 @@ export default class LambdaFunction {
 
     this.#handlerRunner = new HandlerRunner(funOptions, options, env)
     this.#lambdaContext = new LambdaContext(name, memorySize)
+    if (functionDefinition.CustomContext) {
+      this.#lambdaContext.setCustomContext(functionDefinition.CustomContext)
+    }
   }
 
   _startExecutionTimer() {
@@ -138,9 +141,9 @@ export default class LambdaFunction {
       // this.printBlankLine(); // TODO
       console.log('')
       serverlessLog(
-        `Warning: found unsupported runtime '${this.#runtime}' for function '${
+        `Warning: found unsupported runtime '${this.#runtime} ' for function '${
           this.#functionKey
-        }'`,
+        } '`,
       )
     }
   }
@@ -267,7 +270,7 @@ export default class LambdaFunction {
       serverlessLog(
         `(λ: ${
           this.#functionKey
-        }) RequestId: ${requestId}  Duration: ${this._executionTimeInMillis().toFixed(
+        }) RequestId: ${requestId} Duration: ${this._executionTimeInMillis().toFixed(
           2,
         )} ms  Billed Duration: ${this._billedExecutionTimeInMillis()} ms`,
       )
