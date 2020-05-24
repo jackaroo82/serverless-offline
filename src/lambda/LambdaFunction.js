@@ -26,6 +26,7 @@ export default class LambdaFunction {
   #executionTimeStarted = null
   #functionKey = null
   #functionName = null
+  #functionDefinition = null
   #handlerRunner = null
   #idleTimeStarted = null
   #initialized = false
@@ -69,6 +70,7 @@ export default class LambdaFunction {
     // this._executionTimeout = null
     this.#functionKey = functionKey
     this.#functionName = name
+    this.#functionDefinition = functionDefinition
     this.#memorySize = memorySize
     this.#region = provider.region
     this.#runtime = runtime
@@ -82,9 +84,9 @@ export default class LambdaFunction {
       handler,
     )
 
-    this.#artifact = functionDefinition.package?.artifact
+    this.#artifact = functionDefinition.package ?.artifact
     if (!this.#artifact) {
-      this.#artifact = service.package?.artifact
+      this.#artifact = service.package ?.artifact
     }
     if (this.#artifact) {
       // lambda directory contains code and layers
@@ -117,9 +119,6 @@ export default class LambdaFunction {
 
     this.#handlerRunner = new HandlerRunner(funOptions, options, env)
     this.#lambdaContext = new LambdaContext(name, memorySize)
-    if (functionDefinition.CustomContext) {
-      this.#lambdaContext.setCustomContext(functionDefinition.CustomContext)
-    }
   }
 
   _startExecutionTimer() {
@@ -142,22 +141,23 @@ export default class LambdaFunction {
       console.log('')
       serverlessLog(
         `Warning: found unsupported runtime '${this.#runtime} ' for function '${
-          this.#functionKey
-        } '`,
+      this.#functionKey
+    } '`,
       )
-    }
   }
+}
 
-  // based on:
-  // https://github.com/serverless/serverless/blob/v1.50.0/lib/plugins/aws/invokeLocal/index.js#L108
-  _getAwsEnvVars() {
-    return {
-      AWS_DEFAULT_REGION: this.#region,
-      AWS_LAMBDA_FUNCTION_MEMORY_SIZE: this.#memorySize,
-      AWS_LAMBDA_FUNCTION_NAME: this.#functionName,
-      AWS_LAMBDA_FUNCTION_VERSION: '$LATEST',
-      // https://github.com/serverless/serverless/blob/v1.50.0/lib/plugins/aws/lib/naming.js#L123
-      AWS_LAMBDA_LOG_GROUP_NAME: `/aws/lambda/${this.#functionName}`,
+// based on:
+// https://github.com/serverless/serverless/blob/v1.50.0/lib/plugins/aws/invokeLocal/index.js#L108
+_getAwsEnvVars() {
+  return {
+    AWS_DEFAULT_REGION: this.#region,
+    AWS_LAMBDA_FUNCTION_MEMORY_SIZE: this.#memorySize,
+    AWS_LAMBDA_FUNCTION_NAME: this.#functionName,
+    AWS_LAMBDA_FUNCTION_VERSION: '$LATEST',
+    // https://github.com/serverless/serverless/blob/v1.50.0/lib/plugins/aws/lib/naming.js#L123
+    AWS_LAMBDA_LOG_GROUP_NAME: `/aws/lambda/${this.#functionName
+  }`,
       AWS_LAMBDA_LOG_STREAM_NAME:
         '2016/12/02/[$LATEST]f77ff5e4026c45bda9a9ebcec6bc9cad',
       AWS_REGION: this.#region,
@@ -245,6 +245,10 @@ export default class LambdaFunction {
     return this.#functionName
   }
 
+  get functionDefinition() {
+    return this.#functionDefinition
+  }
+
   async runHandler() {
     this.status = 'BUSY'
 
@@ -256,6 +260,10 @@ export default class LambdaFunction {
 
     this.#lambdaContext.setRequestId(requestId)
     this.#lambdaContext.setClientContext(this.#clientContext)
+
+    if (this.#functionDefinition.CustomContext) {
+      this.#lambdaContext.setCustomContext(this.#functionDefinition.CustomContext)
+    }
 
     const context = this.#lambdaContext.create()
 
@@ -269,10 +277,12 @@ export default class LambdaFunction {
     if (!this.#handlerRunner.isDockerRunner()) {
       serverlessLog(
         `(λ: ${
-          this.#functionKey
-        }) RequestId: ${requestId} Duration: ${this._executionTimeInMillis().toFixed(
-          2,
-        )} ms  Billed Duration: ${this._billedExecutionTimeInMillis()} ms`,
+    this.#functionKey
+  }) RequestId: ${ requestId } Duration: ${
+    this._executionTimeInMillis().toFixed(
+      2,
+    )
+  } ms  Billed Duration: ${ this._billedExecutionTimeInMillis() } ms`,
       )
     }
 

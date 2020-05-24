@@ -28,10 +28,12 @@ export default class LambdaContext {
   }
 
   setCustomContext(context) {
+    console.log(`Adding context ${JSON.stringify(context)}`);
     this.#context = { ...context, ...this.#context }
   }
 
   create() {
+    console.log(`Context is ${JSON.stringify(this.#context)}`);
     return this.#context
   }
 }
