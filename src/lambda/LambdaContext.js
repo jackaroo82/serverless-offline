@@ -28,8 +28,11 @@ export default class LambdaContext {
   }
 
   setCustomContext(context) {
-    console.log(`Adding context ${JSON.stringify(context)}`)
-    this.#context.identity = context.identity
+    for (const prop in context) {
+      if (Object.prototype.hasOwnProperty.call(context, prop)) {
+        this.#context[prop] = context[prop]
+      }
+    }
   }
 
   create() {
